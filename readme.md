@@ -1,4 +1,4 @@
-# Install Alarm on Lenovo IX2-DL
+# Install alarm on Lenovo IX2-DL
 
 > Based on https://kiljan.org/2016/11/15/installing-arch-linux-arm-on-an-iomega-ix2-200/
 
@@ -20,6 +20,21 @@ It is also attached in this repo as reference.
 dtc -O dtb -o kirkwood-lenovo-ix2-dl-full.dtb kirkwood-lenovo-ix2-dl-full.dts
 ```
 
+#### Build uImage
+
+```
+mkdir linux
+cd linux
+wget http://mirror.archlinuxarm.org/arm/core/linux-kirkwood-dt-5.15.6-1-arm.pkg.tar.xz
+bsdtar -xpf linux-kirkwood-dt-5.15.6-1-arm.pkg.tar.xz
+cp boot/zImage boot/zImage-dtb
+cat ../kirkwood-lenovo-ix2-dl-full.dts >> boot/zImage-dtb
+mkimage -A arm -O linux -T kernel -C none -a 0x02000000 -e 0x02000000 -n "Arch Linux ARM kernel" -d boot/zImage-dtb boot/uImage
+```
+
+The final image will be in `./linux/boot/uImage`
+
+
 ### 2. Partition your drive
 
 Use fdisk to partition the disk:
@@ -29,15 +44,14 @@ fdisk -l # If you don't know your drive
 fdisk /dev/sd{some letter here}
 ```
 
-> Use o to create a clean DOS partition table.
-> Use n to create a new partition, type: primary, number: 1, first sector: default, last sector: +256M.
-> Use n to create a new partition, type: primary, number: 2, first sector: default, last sector: +8G (or the rest of the remaining free disk space if smaller).
-> Use p to see the new partition table.
-> If ID and Type are not ‘83 Linux’ for both partitions: Use t to change a partition’s type. Type must be 83.
+> Use o to create a clean DOS partition table.  
+> Use n to create a new partition, type: primary, number: 1, first sector: default, last sector: +256M.  
+> Use n to create a new partition, type: primary, number: 2, first sector: default, last sector: +8G (or the rest of the remaining free disk space if smaller).  
+> Use p to see the new partition table.  
+> If ID and Type are not ‘83 Linux’ for both partitions: Use t to change a partition’s type. Type must be 83.  
+> Use w to write the changes to disk.  
 
-> Use w to write the changes to disk.
-
-#### Mount and download image
+#### Install Image
 
 Replace `{}` with correct letter
 
@@ -57,13 +71,10 @@ bsdtar -xpf ArchLinuxARM-kirkwood-latest.tar.gz
 rm ArchLinuxARM-kirkwood-latest.tar.gz
 ```
 
-#### Build Image
+#### Replace uImage
 
-```
-pacman -S linux-kirkwood-dt
-cp /boot/zImage /boot/zImage-dtb
-cat /boot/dtbs/kirkwood-iomega_ix2_200.dtb >> /boot/zImage-dtb
-mkimage -A arm -O linux -T kernel -C none -a 0x02000000 -e 0x02000000 -n "Arch Linux ARM kernel" -d /boot/zImage-dtb /boot/uImage
+```bash
+cp ./linux/boot/uImage /mnt/boot
 ```
 
 ### 3. Prepare your machine
@@ -114,10 +125,10 @@ fw_setenv bootcmd 'run usb_load; run sata_load'
 
 Pin, the top three pin (JP1) with jump is for 3.3v/5v mode, by default is 3.3v. Skip the first Pin aligned on the top (as Pin 1, facing the Pin down) and connect as following:
 
-> Pin 1: Do NOT connect. This pin provides +3.3V and is not required for USB UART serial adapters.
-> Pin 2: TxD. Connect to RxD of the serial adapter.
-> Pin 3: GND. Connect to GND of the serial adapter.
-> Pin 4: RxD. Connect to TxD of the serial adapter.
+> Pin 1: Do NOT connect. This pin provides +3.3V and is not required for USB UART serial adapters.  
+> Pin 2: TxD. Connect to RxD of the serial adapter.  
+> Pin 3: GND. Connect to GND of the serial adapter.  
+> Pin 4: RxD. Connect to TxD of the serial adapter.  
 
 ```
 screen /dev/usb{varies} 115200
