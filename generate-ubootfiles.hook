@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = linux-kirkwood-dt
+
+[Action]
+Description = Make the new kernel and initrd bootable by U-Boot
+When = PostTransaction
+Exec = /usr/local/sbin/generate-ubootfiles
+Depends = uboot-tools

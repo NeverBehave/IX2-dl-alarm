@@ -2,6 +2,8 @@
 
 > Based on https://kiljan.org/2016/11/15/installing-arch-linux-arm-on-an-iomega-ix2-200/
 
+This guide uses a usb device as system disk. 
+
 ## Steps 
 
 You may get all tools by enter `nix-shell` if you have nix installed.
@@ -84,6 +86,13 @@ rm -r /mnt/usr/lib/modules
 cp -r ./linux/usr/lib/modules /mnt/usr/lib
 ```
 
+For automatic update, copy the zImage and dtb to boot as well.
+
+```bash
+cp ./kirkwood-lenovo-ix2-dl-full.dtb /mnt/boot/
+cp ./linux/boot/zImage /mnt/boot
+```
+
 ### 3. Prepare your machine
 
 #### Backup your current parameters
@@ -92,7 +101,7 @@ Choose either way to do this:
 
 ##### SSH
 
-First, enable ssh: visit `http://{IP}/manage/diagnostics.html
+First, enable ssh: visit `http://{IP}/manage/diagnostics.html`
 
 - User: `root`
 - Password: `soho{password you set}`
@@ -101,7 +110,7 @@ First, enable ssh: visit `http://{IP}/manage/diagnostics.html
 fw_printenv > /tmp/env
 ```
 
-and set up the following so that your device will boot from usb first
+backup and set up the following so that your device will boot from usb first
 
 ```bash
 fw_setenv ethaddr 'AA:00:00:00:00:01'
@@ -130,18 +139,21 @@ fw_setenv bootcmd 'run usb_load; run sata_load'
 
 ##### UBoot
 
-Pin, the top three pin (JP1) with jump is for 3.3v/5v mode, by default is 3.3v. Skip the first Pin (Which is the one from the right when you pointing the pin toward yourself, board facing up) and connect as following:
+- The top three pin (JP1) with jump is for 3.3v/5v mode, by default is 3.3v.   
+- Skip the first Pin (Which is the one from the right when you pointing the pin toward yourself, board facing up) and connect as following:  
 
 > Pin 1: Do NOT connect. This pin provides +3.3V and is not required for USB UART serial adapters.  
 > Pin 2: TxD. Connect to RxD of the serial adapter.  
 > Pin 3: GND. Connect to GND of the serial adapter.  
 > Pin 4: RxD. Connect to TxD of the serial adapter.  
 
+Connect console:  
+
 ```
 screen /dev/ttyUSB{varies} 115200
 ```
 
-The following will show up:
+The following will show up:  
 
 ```
         |  \/  | __ _ _ ____   _____| | |
@@ -164,7 +176,7 @@ Tips:
 printenv
 ```
 
-then set vars, **Do NOT copy/paste all commands** since this will result in incomplete executed commands due to the lack of flow control on the serial interface in U-Boot. A copy/paste of each line separately should be OK.
+backup then set vars, **Do NOT copy/paste all commands** since this will result in incomplete executed commands due to the lack of flow control on the serial interface in U-Boot. A copy/paste of each line separately should be OK.
 
 ```
 setenv ethaddr 'AA:00:00:00:00:01'
@@ -193,6 +205,23 @@ saveenv
 ```
 
 ### 4. Post Install
+
+#### fstab
+
+By default, the fstab is not set up properly. Check the fstab in this repo to mount your partitions  (e.g. boot) correctly. 
+
+#### Automatic uImage generate after upgrade
+
+With your drive mounted:  
+
+```bash
+mkdir /mnt/etc/pacman.d/hooks
+cp generate-ubootfiles.hook /mnt/etc/pacman.d/hooks
+cp generate-ubootfiles /mnt/usr/local/sbin/
+chmod +x /mnt/usr/local/sbin/generate-ubootfiles
+```
+
+Test the script by running on the machine
 
 #### pacman
 

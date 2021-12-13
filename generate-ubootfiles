@@ -1,0 +1,26 @@
+#!/bin/sh
+#Creates U-Boot images from the boot files
+
+zImage=/boot/zImage
+dtb=/boot/kirkwood-lenovo-ix2-dl-full.dtb
+zImagedtb=/boot/zImage-dtb
+uImage=/boot/uImage
+uImageAddr=0x02000000
+
+initrd=/boot/initramfs-linux.img
+uInitrd=/boot/uInitrd
+uInitAddr=0x08004000
+
+if [ ! -e $zImage -o ! -e $initrd ]; then 
+  echo "distribute-bootfiles: Error! $zImage and/or $initrd is missing."
+  echo "distribute-bootfiles: New U-Boot files will NOT be created!"
+  exit 1
+fi
+
+#Create uImage
+cp $zImage $zImagedtb
+cat $dtb >> $zImagedtb
+mkimage -A arm -O linux -T kernel -C none -a $uImageAddr -e $uImageAddr -n "Arch Linux ARM kernel" -d $zImagedtb $uImage
+
+#Create uInitrd
+mkimage -A arm -O linux -T ramdisk -C gzip -a $uInitAddr -n "Arch Linux ARM initrd" -d $initrd $uInitrd
