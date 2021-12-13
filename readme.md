@@ -139,6 +139,8 @@ fw_setenv bootcmd 'run usb_load; run sata_load'
 
 ##### UBoot
 
+Tips: To access UART, removing the front panel (5 screws) is easier than back (need to remove cables)  
+
 - The top three pin (JP1) with jump is for 3.3v/5v mode, by default is 3.3v.   
 - Skip the first Pin (Which is the one from the right when you pointing the pin toward yourself, board facing up) and connect as following:  
 
