@@ -28,7 +28,7 @@ cd linux
 wget http://mirror.archlinuxarm.org/arm/core/linux-kirkwood-dt-5.15.6-1-arm.pkg.tar.xz
 bsdtar -xpf linux-kirkwood-dt-5.15.6-1-arm.pkg.tar.xz
 cp boot/zImage boot/zImage-dtb
-cat ../kirkwood-lenovo-ix2-dl-full.dts >> boot/zImage-dtb
+cat ../kirkwood-lenovo-ix2-dl-full.dtb >> boot/zImage-dtb
 mkimage -A arm -O linux -T kernel -C none -a 0x02000000 -e 0x02000000 -n "Arch Linux ARM kernel" -d boot/zImage-dtb boot/uImage
 ```
 
@@ -77,6 +77,13 @@ rm ArchLinuxARM-kirkwood-latest.tar.gz
 cp ./linux/boot/uImage /mnt/boot
 ```
 
+Also, you will need to copy the file from `./linux/usr/lib/modules` to the `/mnt/usr/lib/modules`. Remove the previous one. 
+
+```bash
+rm -r /mnt/usr/lib/modules
+cp -r ./linux/usr/lib/modules /mnt/usr/lib
+```
+
 ### 3. Prepare your machine
 
 #### Backup your current parameters
@@ -123,7 +130,7 @@ fw_setenv bootcmd 'run usb_load; run sata_load'
 
 ##### UBoot
 
-Pin, the top three pin (JP1) with jump is for 3.3v/5v mode, by default is 3.3v. Skip the first Pin aligned on the top (as Pin 1, facing the Pin down) and connect as following:
+Pin, the top three pin (JP1) with jump is for 3.3v/5v mode, by default is 3.3v. Skip the first Pin (Which is the one from the right when you pointing the pin toward yourself, board facing up) and connect as following:
 
 > Pin 1: Do NOT connect. This pin provides +3.3V and is not required for USB UART serial adapters.  
 > Pin 2: TxD. Connect to RxD of the serial adapter.  
@@ -131,10 +138,27 @@ Pin, the top three pin (JP1) with jump is for 3.3v/5v mode, by default is 3.3v. 
 > Pin 4: RxD. Connect to TxD of the serial adapter.  
 
 ```
-screen /dev/usb{varies} 115200
+screen /dev/ttyUSB{varies} 115200
 ```
 
-Tips: In screen, you could use `ctrl+a`, then `esc` so you can scroll.
+The following will show up:
+
+```
+        |  \/  | __ _ _ ____   _____| | |
+        | |\/| |/ _` | '__\ \ / / _ \ | |
+        | |  | | (_| | |   \ V /  __/ | |
+        |_|  |_|\__,_|_|    \_/ \___|_|_|
+ _   _     ____              _
+| | | |   | __ )  ___   ___ | |_
+| | | |___|  _ \ / _ \ / _ \| __|
+| |_| |___| |_) | (_) | (_) | |_
+ \___/    |____/ \___/ \___/ \__|  ** ix2-spi ** ** uboot_ver:0.0.9 **
+```
+
+Tips: 
+
+- In screen, you could use `ctrl+a`, then `esc` so you can scroll.
+- How to check which dev is the usb? check dmesg. https://superuser.com/questions/361885/how-do-i-figure-out-which-dev-is-a-usb-flash-drive
 
 ```
 printenv
@@ -167,7 +191,6 @@ setenv sata_load 'run bootargs_combine; ide reset; run sata_load_disk1; run sata
 setenv bootcmd 'run usb_load; run sata_load'
 saveenv
 ```
-
 
 ### 4. Post Install
 
