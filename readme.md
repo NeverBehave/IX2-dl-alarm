@@ -1,6 +1,6 @@
 # Install alarm on Lenovo IX2-DL
 
-> Based on https://kiljan.org/2016/11/15/installing-arch-linux-arm-on-an-iomega-ix2-200/
+> Based on https://kiljan.org/2021/04/22/installing-arch-linux-arm-on-an-iomega-ix2-200/
 
 This guide uses a usb device as system disk. 
 
@@ -73,10 +73,11 @@ bsdtar -xpf ArchLinuxARM-kirkwood-latest.tar.gz
 rm ArchLinuxARM-kirkwood-latest.tar.gz
 ```
 
-#### Replace uImage
+#### Replace Image
 
 ```bash
 cp ./linux/boot/uImage /mnt/boot
+mkimage -A arm -O linux -T ramdisk -C gzip -a 0x00000000 -e 0x00000000 -n "Arch Linux ARM initrd" -d /mnt/boot/initramfs-linux.img /mnt/boot/uInitrd
 ```
 
 Also, you will need to copy the file from `./linux/usr/lib/modules` to the `/mnt/usr/lib/modules`. Remove the previous one. 
@@ -121,7 +122,7 @@ fw_setenv bootargs_console 'console=ttyS0,115200'
 fw_setenv bootargs_mtdparts 'mtdparts=orion_nand:640k(u-boot)ro,16k(u-boot-env),-(iomega-firmware)ro'
 fw_setenv bootargs_root 'root=LABEL=ROOT rw'
 
-fw_setenv memoffset_kernel '0x02000000'
+fw_setenv memoffset_kernel '0x01000000'
 fw_setenv memoffset_initrd '0x08004000'
 
 fw_setenv bootargs_combine 'setenv bootargs ${bootargs_console} ${bootargs_mtdparts} ${bootargs_root}'
@@ -189,7 +190,7 @@ setenv bootargs_console 'console=ttyS0,115200'
 setenv bootargs_mtdparts 'mtdparts=orion_nand:640k(u-boot)ro,16k(u-boot-env),-(iomega-firmware)ro'
 setenv bootargs_root 'root=LABEL=ROOT rw'
 
-setenv memoffset_kernel '0x02000000'
+setenv memoffset_kernel '0x01000000'
 setenv memoffset_initrd '0x08004000'
 
 setenv bootargs_combine 'setenv bootargs ${bootargs_console} ${bootargs_mtdparts} ${bootargs_root}'
@@ -211,6 +212,15 @@ saveenv
 #### fstab
 
 By default, the fstab is not set up properly. Check the fstab in this repo to mount your partitions  (e.g. boot) correctly. 
+
+#### network
+
+Set all DHCP
+
+```
+sed 's/eth0/e*/g' /mnt/etc/systemd/network/eth0.network > /mnt/etc/systemd/network/eth.network
+rm /mnt/etc/systemd/network/eth0.network
+```
 
 #### Automatic uImage generate after upgrade
 
