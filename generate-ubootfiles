@@ -9,7 +9,7 @@ uImageAddr=0x02000000
 
 initrd=/boot/initramfs-linux.img
 uInitrd=/boot/uInitrd
-uInitAddr=0x08004000
+uInitAddr=0x00000000
 
 if [ ! -e $zImage -o ! -e $initrd ]; then 
   echo "distribute-bootfiles: Error! $zImage and/or $initrd is missing."

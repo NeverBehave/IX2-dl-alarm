@@ -114,7 +114,6 @@ fw_printenv > /tmp/env
 backup and set up the following so that your device will boot from usb first
 
 ```bash
-fw_setenv ethaddr 'AA:00:00:00:00:01'
 fw_setenv mainlineLinux 'yes'
 fw_setenv arcNumber '1682'
 
@@ -182,7 +181,6 @@ printenv
 backup then set vars, **Do NOT copy/paste all commands** since this will result in incomplete executed commands due to the lack of flow control on the serial interface in U-Boot. A copy/paste of each line separately should be OK.
 
 ```
-setenv ethaddr 'AA:00:00:00:00:01'
 setenv mainlineLinux 'yes'
 setenv arcNumber '1682'
 
@@ -211,7 +209,16 @@ saveenv
 
 #### fstab
 
-By default, the fstab is not set up properly. Check the fstab in this repo to mount your partitions  (e.g. boot) correctly. 
+By default, the device will not mount boot partition, and your hard drive. Example `/etc/fstab`:
+
+```
+# Static information about the filesystems.
+# See fstab(5) for details.
+
+# <file system> <dir> <type> <options> <dump> <pass>
+/dev/disk/by-id/xxxxx-part1 /boot ext2 defaults,noatime 0 0
+/dev/disk/by-id/xxxx-part1 /data ext4 defaults,noatime,barrier=1 0 0
+```
 
 #### network
 
@@ -224,6 +231,7 @@ rm /mnt/etc/systemd/network/eth0.network
 
 #### Automatic uImage generate after upgrade
 
+
 With your drive mounted:  
 
 ```bash
@@ -235,14 +243,21 @@ chmod +x /mnt/usr/local/sbin/generate-ubootfiles
 
 Test the script by running on the machine
 
-#### pacman
+##### pacman
 
 > https://archlinuxarm.org/platforms/armv8/broadcom/raspberry-pi-3
 
 ```bash
 pacman-key --init
 pacman-key --populate archlinuxarm
+
+# Needed for uboot generation
+# Update required for system to run
+pacman-key --init && pacman-key --populate archlinuxarm
+pacman -Syu --noconfirm uboot-tools mdadm gptfdisk parted rsync arch-install-scripts
 ```
+
+Also, add `IgnorePkg =a linux` in `/etc/pacman.conf`, so it won't touch our linux module.
 
 #### Swap
 
