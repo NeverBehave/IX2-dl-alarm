@@ -1,3 +1,5 @@
+**Archlinux has dropped 32 bit software builds and thus most of the software builts will need to compile manually. This guide is only here as reference and it is not recommended to continue run this hardware.**
+
 # Install alarm on Lenovo IX2-DL
 
 > Based on https://kiljan.org/2021/04/22/installing-arch-linux-arm-on-an-iomega-ix2-200/
